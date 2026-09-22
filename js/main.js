@@ -45,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.scrollTo(0, 0);
   initTheme();
   initOpeningOverlay();
+  initLanguageSwitcher();
   initDynamicContent();
   initProfileImageCarousel();
   initParticlesCanvas();
@@ -733,6 +734,116 @@ function animateCountUp(cardElement) {
 }
 
 /* ==========================================================================
+   4.5. LANGUAGE SWITCHER & I18N SYSTEM (VI / EN)
+   ========================================================================== */
+let currentLang = localStorage.getItem("portfolio_lang") || "vi";
+
+function initLanguageSwitcher() {
+  const langSwitcher = document.getElementById("lang-switcher");
+  if (langSwitcher) {
+    const btns = langSwitcher.querySelectorAll(".lang-btn");
+    btns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const selectedLang = btn.getAttribute("data-lang");
+        if (selectedLang && selectedLang !== currentLang) {
+          setLanguage(selectedLang);
+        }
+      });
+    });
+  }
+}
+
+function setLanguage(lang, isInitial = false) {
+  if (lang !== "vi" && lang !== "en") lang = "vi";
+  currentLang = lang;
+  localStorage.setItem("portfolio_lang", lang);
+  document.documentElement.setAttribute("lang", lang);
+
+  // 1. Cập nhật trạng thái active trên các nút chọn ngôn ngữ
+  const langBtns = document.querySelectorAll(".lang-btn");
+  langBtns.forEach(btn => {
+    if (btn.getAttribute("data-lang") === lang) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+
+  // 2. Cập nhật các phần tử tĩnh có thuộc tính data-i18n và data-i18n-placeholder
+  if (typeof I18N_DICTIONARY !== "undefined" && I18N_DICTIONARY[lang]) {
+    const dict = I18N_DICTIONARY[lang];
+    const getNestedVal = (obj, path) => path.split(".").reduce((prev, curr) => (prev ? prev[curr] : null), obj);
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      const val = getNestedVal(dict, key);
+      if (val !== null && val !== undefined) {
+        el.textContent = val;
+      }
+    });
+
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      const val = getNestedVal(dict, key);
+      if (val !== null && val !== undefined) {
+        el.placeholder = val;
+      }
+    });
+  }
+
+  // 3. Cập nhật dữ liệu động cá nhân
+  if (typeof PORTFOLIO_DATA !== "undefined") {
+    const data = PORTFOLIO_DATA;
+    const langData = data.personal[lang] || data.personal.vi;
+
+    const heroBio = document.getElementById("hero-bio");
+    if (heroBio && langData.bio) {
+      heroBio.textContent = langData.bio;
+    }
+
+    const heroStatus = document.getElementById("hero-status-text");
+    if (heroStatus && langData.statusBadge) {
+      heroStatus.textContent = langData.statusBadge;
+    }
+
+    const contactLocation = document.getElementById("contact-location-text");
+    if (contactLocation && langData.location) {
+      contactLocation.textContent = langData.location;
+    }
+
+    // Cập nhật Quick Stats ở Hero
+    const heroQuickStats = document.getElementById("hero-quick-stats");
+    if (heroQuickStats && data.about && data.about.stats) {
+      heroQuickStats.innerHTML = data.about.stats.map(s => `
+        <div class="quick-stat-card">
+          <span class="quick-stat-val">${s.number}</span>
+          <span class="quick-stat-lbl">${lang === "en" ? s.label_en : s.label_vi}</span>
+        </div>
+      `).join("");
+    }
+
+    // Tái hiển thị các danh mục theo ngôn ngữ được chọn
+    renderSkills(data.skills);
+    renderProjects(data.projects);
+    renderTimeline(data.timeline);
+    renderTestimonials(data.testimonials);
+
+    // Cập nhật chuỗi chữ xoay vòng hiệu ứng gõ máy
+    updateTypewriterTitles(langData.rotatingTitles);
+  }
+
+  // 4. Kích hoạt lại hiệu ứng 3D tilt và spotlight cho các thẻ mới render
+  if (typeof initTiltAndSpotlight === "function" && !isInitial) {
+    setTimeout(initTiltAndSpotlight, 50);
+  }
+
+  // 5. Cập nhật ScrollTrigger để hiệu ứng cuộn luôn chuẩn xác
+  if (typeof ScrollTrigger !== "undefined") {
+    ScrollTrigger.refresh();
+  }
+}
+
+/* ==========================================================================
    5. RENDER DYNAMIC DATA FROM DATA.JS
    ========================================================================== */
 function initDynamicContent() {
@@ -747,39 +858,13 @@ function initDynamicContent() {
   const heroName = document.getElementById("hero-name");
   if (heroName) heroName.textContent = data.personal.name;
 
-  const heroBio = document.getElementById("hero-bio");
-  if (heroBio) heroBio.textContent = data.personal.bio;
-
-  const heroStatus = document.getElementById("hero-status-text");
-  if (heroStatus) heroStatus.textContent = data.personal.statusBadge;
-
   // Social Links in Hero
   renderSocialLinks(data.socials);
 
-  // 2. Hero Quick Highlights / Stats (Gom tinh chỉnh từ phần About vào Hero)
-  const heroQuickStats = document.getElementById("hero-quick-stats");
-  if (heroQuickStats && data.about && data.about.stats) {
-    heroQuickStats.innerHTML = data.about.stats.map(s => `
-      <div class="quick-stat-card">
-        <span class="quick-stat-val">${s.number}</span>
-        <span class="quick-stat-lbl">${s.label}</span>
-      </div>
-    `).join("");
-  }
+  // Áp dụng ngôn ngữ hiện tại
+  setLanguage(currentLang, true);
 
-  // 3. Skills Section
-  renderSkills(data.skills);
-
-  // 4. Projects Section
-  renderProjects(data.projects);
-
-  // 5. Timeline Section
-  renderTimeline(data.timeline);
-
-  // 6. Testimonials Section
-  renderTestimonials(data.testimonials);
-
-  // 7. Contact Details
+  // 2. Contact Details
   const contactEmail = document.getElementById("contact-email-text");
   const contactEmailLink = document.getElementById("contact-email-link");
   if (contactEmail && contactEmailLink) {
@@ -794,17 +879,14 @@ function initDynamicContent() {
     contactPhoneLink.href = `tel:${data.personal.phone.replace(/[^0-9+]/g, '')}`;
   }
 
-  const contactLocation = document.getElementById("contact-location-text");
-  if (contactLocation) contactLocation.textContent = data.personal.location;
-
   // Copy email button
   const copyBtn = document.getElementById("copy-email-btn");
   if (copyBtn) {
     copyBtn.addEventListener("click", () => {
       navigator.clipboard.writeText(data.personal.email).then(() => {
-        showToast("Đã sao chép email vào bộ nhớ tạm thành công!");
+        showToast(currentLang === "en" ? "Email copied to clipboard!" : "Đã sao chép email vào bộ nhớ tạm thành công!");
       }).catch(() => {
-        showToast("Bạn có thể copy email thủ công nhé.");
+        showToast(currentLang === "en" ? "You can copy the email manually." : "Bạn có thể copy email thủ công nhé.");
       });
     });
   }
@@ -825,50 +907,68 @@ function renderSkills(skills) {
   const container = document.getElementById("skills-container");
   if (!container || !skills) return;
 
-  container.innerHTML = skills.map((group, idx) => `
-    <div class="skill-category-card spotlight-card tilt-card" data-card-idx="${idx}">
-      <div class="skill-cat-header">
-        <h3>${group.category}</h3>
-        <p>${group.description}</p>
+  const isEn = currentLang === "en";
+
+  container.innerHTML = skills.map((group, idx) => {
+    const categoryTitle = isEn ? (group.category_en || group.category_vi) : (group.category_vi || group.category_en);
+    const categoryDesc = isEn ? (group.description_en || group.description_vi) : (group.description_vi || group.description_en);
+
+    return `
+      <div class="skill-category-card spotlight-card tilt-card" data-card-idx="${idx}">
+        <div class="skill-cat-header">
+          <h3>${categoryTitle}</h3>
+          <p>${categoryDesc}</p>
+        </div>
+        <div class="skill-items-list">
+          ${group.items.map(item => {
+            const itemName = isEn ? (item.name_en || item.name_vi) : (item.name_vi || item.name_en);
+            return `
+              <div class="skill-item">
+                <div class="skill-info">
+                  <span class="skill-name">${itemName}</span>
+                  <span class="skill-percent" data-target="${item.level}">${item.level}</span>
+                </div>
+                <div class="skill-bar-bg">
+                  <div class="skill-bar-fill" data-width="${item.level}" style="width: ${item.level};"></div>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
       </div>
-      <div class="skill-items-list">
-        ${group.items.map(item => `
-          <div class="skill-item">
-            <div class="skill-info">
-              <span class="skill-name">${item.name}</span>
-              <span class="skill-percent" data-target="${item.level}">0%</span>
-            </div>
-            <div class="skill-bar-bg">
-              <div class="skill-bar-fill" data-width="${item.level}" style="width: 0%;"></div>
-            </div>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
 function renderProjects(projects) {
   const container = document.getElementById("horizontal-track") || document.getElementById("projects-grid");
   if (!container || !projects) return;
 
-  container.innerHTML = projects.map((proj, idx) => `
-    <div class="cute-project-card" onclick="openProjectModal('${proj.id}')" role="button" tabindex="0" aria-label="Xem chi tiết ${proj.title}">
-      <div class="card-img-wrap">
-        ${proj.video ? `
-          <video src="${proj.video}" autoplay loop muted playsinline class="card-video"></video>
-          <span class="card-video-pill">▶ Demo Video</span>
-        ` : `
-          <img src="${proj.image}" alt="${proj.title}" class="card-img" />
-        `}
+  const isEn = currentLang === "en";
+
+  container.innerHTML = projects.map((proj, idx) => {
+    const pInfo = isEn ? (proj.en || proj.vi || proj) : (proj.vi || proj.en || proj);
+    const title = pInfo.title || proj.title;
+    const desc = pInfo.description || proj.description;
+
+    return `
+      <div class="cute-project-card" onclick="openProjectModal('${proj.id}')" role="button" tabindex="0" aria-label="${isEn ? 'View details for ' : 'Xem chi tiết '}${title}">
+        <div class="card-img-wrap">
+          ${proj.video ? `
+            <video src="${proj.video}" autoplay loop muted playsinline class="card-video"></video>
+            <span class="card-video-pill">▶ Demo Video</span>
+          ` : `
+            <img src="${proj.image}" alt="${title}" class="card-img" />
+          `}
+        </div>
+        <h3 class="card-title">${title}</h3>
+        <p class="card-desc">${desc}</p>
+        <div class="card-tags">
+          ${(proj.tags || []).map(tag => `<span class="cute-tag">${tag}</span>`).join("")}
+        </div>
       </div>
-      <h3 class="card-title">${proj.title}</h3>
-      <p class="card-desc">${proj.description}</p>
-      <div class="card-tags">
-        ${(proj.tags || []).map(tag => `<span class="cute-tag">${tag}</span>`).join("")}
-      </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 
   // Tự động kích hoạt phát video mượt mà trên trình duyệt
   const cardVideos = container.querySelectorAll("video.card-video");
@@ -901,6 +1001,8 @@ function renderTimeline(timeline) {
   const container = document.getElementById("timeline-container");
   if (!container || !timeline) return;
 
+  const isEn = currentLang === "en";
+
   container.innerHTML = `
     <div class="timeline-pinned-wrapper" id="timeline-pinned-stage">
       <!-- Cột tiến trình Laser & Chấm mốc bên trái -->
@@ -908,33 +1010,45 @@ function renderTimeline(timeline) {
         <div class="timeline-rail-line"></div>
         <div class="timeline-laser-line" id="timeline-laser-line"></div>
         <div class="timeline-rail-dots" id="timeline-rail-dots">
-          ${timeline.map((item, idx) => `
-            <div class="timeline-rail-dot ${idx === 0 ? 'active' : ''}" data-step="${idx}" title="${item.period}">
-              <span class="timeline-dot-inner"></span>
-            </div>
-          `).join("")}
+          ${timeline.map((item, idx) => {
+            const period = isEn ? (item.period_en || item.period_vi) : (item.period_vi || item.period_en);
+            return `
+              <div class="timeline-rail-dot ${idx === 0 ? 'active' : ''}" data-step="${idx}" title="${period}">
+                <span class="timeline-dot-inner"></span>
+              </div>
+            `;
+          }).join("")}
         </div>
       </div>
 
       <!-- Khung thẻ xếp chồng (Task-Switcher Stack) -->
       <div class="timeline-cards-stack" id="timeline-cards-stack">
-        ${timeline.map((item, idx) => `
-          <div class="timeline-stack-card" data-card-idx="${idx}" style="z-index: ${10 + idx};">
-            <div class="timeline-card-inner spotlight-card tilt-card">
-              <div class="timeline-card-header">
-                <div class="timeline-period">${item.period}</div>
+        ${timeline.map((item, idx) => {
+          const tInfo = isEn ? (item.en || item.vi || item) : (item.vi || item.en || item);
+          const period = isEn ? (item.period_en || item.period_vi) : (item.period_vi || item.period_en);
+          const company = isEn ? (item.company_en || item.company_vi) : (item.company_vi || item.company_en);
+          const role = tInfo.role || item.role;
+          const desc = tInfo.description || item.description;
+          const achievements = tInfo.achievements || item.achievements || [];
+
+          return `
+            <div class="timeline-stack-card" data-card-idx="${idx}" style="z-index: ${10 + idx};">
+              <div class="timeline-card-inner spotlight-card tilt-card">
+                <div class="timeline-card-header">
+                  <div class="timeline-period">${period}</div>
+                </div>
+                <h3 class="timeline-title">${role}</h3>
+                <div class="timeline-company">${company}</div>
+                <p class="timeline-desc">${desc}</p>
+                ${achievements.length > 0 ? `
+                  <ul class="timeline-achievements">
+                    ${achievements.map(ach => `<li>${ach}</li>`).join("")}
+                  </ul>
+                ` : ''}
               </div>
-              <h3 class="timeline-title">${item.role}</h3>
-              <div class="timeline-company">${item.company}</div>
-              <p class="timeline-desc">${item.description}</p>
-              ${item.achievements && item.achievements.length > 0 ? `
-                <ul class="timeline-achievements">
-                  ${item.achievements.map(ach => `<li>${ach}</li>`).join("")}
-                </ul>
-              ` : ''}
             </div>
-          </div>
-        `).join("")}
+          `;
+        }).join("")}
       </div>
     </div>
   `;
@@ -944,55 +1058,71 @@ function renderTestimonials(testimonials) {
   const container = document.getElementById("testimonials-container");
   if (!container || !testimonials || testimonials.length === 0) return;
 
-  container.innerHTML = testimonials.map((item, idx) => `
-    <div class="testimonial-card spotlight-card tilt-card reveal delay-${idx + 1}">
-      <div class="testimonial-card-top">
-        <div class="testimonial-tag-pill tag-pill-${idx}">
-          <span class="testimonial-tag-dot tag-dot-${idx}"></span>
-          <span>${item.tag}</span>
-        </div>
-        <svg class="testimonial-quote-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-        </svg>
-      </div>
+  const isEn = currentLang === "en";
 
-      <p class="testimonial-quote-text">“${item.quote}”</p>
+  container.innerHTML = testimonials.map((item, idx) => {
+    const tInfo = isEn ? (item.en || item.vi || item) : (item.vi || item.en || item);
+    const quote = tInfo.quote || item.quote;
+    const role = tInfo.role || item.role;
 
-      <div class="testimonial-author-row">
-        <div class="testimonial-avatar-wrap" style="background: ${item.gradient};">
-          <span>${item.initials}</span>
+    return `
+      <div class="testimonial-card spotlight-card tilt-card reveal delay-${idx + 1}">
+        <div class="testimonial-card-top">
+          <div class="testimonial-tag-pill tag-pill-${idx}">
+            <span class="testimonial-tag-dot tag-dot-${idx}"></span>
+            <span>${item.tag}</span>
+          </div>
+          <svg class="testimonial-quote-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+          </svg>
         </div>
-        <div class="testimonial-author-info">
-          <h4 class="testimonial-name">${item.author}</h4>
-          <span class="testimonial-role">${item.role}</span>
+
+        <p class="testimonial-quote-text">“${quote}”</p>
+
+        <div class="testimonial-author-row">
+          <div class="testimonial-avatar-wrap" style="background: ${item.gradient};">
+            <span>${item.initials}</span>
+          </div>
+          <div class="testimonial-author-info">
+            <h4 class="testimonial-name">${item.author}</h4>
+            <span class="testimonial-role">${role}</span>
+          </div>
         </div>
       </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
 /* ==========================================================================
-   6. TYPEWRITER EFFECT IN HERO
+   6. TYPEWRITER EFFECT IN HERO (BILINGUAL)
    ========================================================================== */
+let typewriterTimeout = null;
+let activeTypewriterTitles = [];
+
 function initTypewriter() {
   const target = document.getElementById("typewriter-text");
   if (!target || typeof PORTFOLIO_DATA === "undefined") return;
 
-  const titles = PORTFOLIO_DATA.personal.rotatingTitles || [
-    "Fullstack Developer",
-    "UI/UX Designer",
-    "Problem Solver"
+  const pData = PORTFOLIO_DATA.personal;
+  const langData = pData[currentLang] || pData.vi;
+  activeTypewriterTitles = langData.rotatingTitles || [
+    "Shopify Technical Support (Remote)",
+    "IT & Technical Specialist",
+    "Freelance CMS & E-Commerce",
+    "inshanemode"
   ];
 
   let titleIndex = 0;
   let charIndex = 0;
   let isDeleting = false;
-  const typeSpeed = 90;
-  const deleteSpeed = 45;
+  const typeSpeed = 80;
+  const deleteSpeed = 40;
   const pauseDuration = 1800;
 
   function type() {
-    const currentTitle = titles[titleIndex];
+    if (activeTypewriterTitles.length === 0) return;
+    if (titleIndex >= activeTypewriterTitles.length) titleIndex = 0;
+    const currentTitle = activeTypewriterTitles[titleIndex];
 
     if (isDeleting) {
       target.textContent = currentTitle.substring(0, charIndex - 1);
@@ -1009,14 +1139,20 @@ function initTypewriter() {
       isDeleting = true;
     } else if (isDeleting && charIndex === 0) {
       isDeleting = false;
-      titleIndex = (titleIndex + 1) % titles.length;
+      titleIndex = (titleIndex + 1) % activeTypewriterTitles.length;
       delay = 350;
     }
 
-    setTimeout(type, delay);
+    typewriterTimeout = setTimeout(type, delay);
   }
 
   type();
+}
+
+function updateTypewriterTitles(newTitles) {
+  if (Array.isArray(newTitles) && newTitles.length > 0) {
+    activeTypewriterTitles = newTitles;
+  }
 }
 
 /* ==========================================================================
@@ -1058,13 +1194,19 @@ window.openProjectModal = function(projectId) {
   const modalContent = document.getElementById("modal-project-content");
   if (!modal || !modalContent) return;
 
+  const isEn = currentLang === "en";
+  const pInfo = isEn ? (project.en || project.vi || project) : (project.vi || project.en || project);
+  const title = pInfo.title || project.title;
+  const desc = pInfo.fullDescription || pInfo.description || project.fullDescription || project.description;
+  const highlights = pInfo.highlights || project.highlights || [];
+
   const mediaHtml = project.video ? `
     <div style="border-radius: var(--radius-md); overflow: hidden; margin-bottom: 20px; aspect-ratio: 16/9; background: #0b0f19; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
       <video src="${project.video}" controls autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: contain;"></video>
     </div>
   ` : `
     <div style="border-radius: var(--radius-md); overflow: hidden; margin-bottom: 20px; height: 260px;">
-      <img src="${project.image}" alt="${project.title}" style="width: 100%; height: 100%; object-fit: cover;" />
+      <img src="${project.image}" alt="${title}" style="width: 100%; height: 100%; object-fit: cover;" />
     </div>
   `;
 
@@ -1072,24 +1214,24 @@ window.openProjectModal = function(projectId) {
     ${mediaHtml}
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
       <span class="project-badge" style="position:static;">${project.category}</span>
-      <span style="color: var(--text-muted); font-size: 0.85rem;">Mã dự án: ${project.id}</span>
+      <span style="color: var(--text-muted); font-size: 0.85rem;">${isEn ? 'Project ID:' : 'Mã dự án:'} ${project.id}</span>
     </div>
-    <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 12px;">${project.title}</h2>
+    <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 12px;">${title}</h2>
     <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 20px;">
-      ${project.fullDescription || project.description}
+      ${desc}
     </p>
 
-    ${project.highlights && project.highlights.length > 0 ? `
+    ${highlights && highlights.length > 0 ? `
       <div style="margin-bottom: 20px;">
-        <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 8px;">Điểm nổi bật:</h4>
+        <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 8px;">${isEn ? 'Key Technical Highlights:' : 'Điểm nổi bật kỹ thuật:'}</h4>
         <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px;">
-          ${project.highlights.map(h => `<li style="position: relative; padding-left: 18px; color: var(--text-secondary); font-size: 0.9rem;"><span style="position: absolute; left: 0; color: var(--primary); font-weight: 700;">-</span> ${h}</li>`).join("")}
+          ${highlights.map(h => `<li style="position: relative; padding-left: 18px; color: var(--text-secondary); font-size: 0.9rem;"><span style="position: absolute; left: 0; color: var(--primary); font-weight: 700;">-</span> ${h}</li>`).join("")}
         </ul>
       </div>
     ` : ''}
 
     <div style="margin-bottom: 24px;">
-      <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 8px;">Công nghệ sử dụng:</h4>
+      <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 8px;">${isEn ? 'Technologies Used:' : 'Công nghệ sử dụng:'}</h4>
       <div class="project-tags">
         ${project.tags.map(t => `<span class="tech-tag">${t}</span>`).join("")}
       </div>
@@ -1098,12 +1240,12 @@ window.openProjectModal = function(projectId) {
     <div style="display: flex; gap: 12px; flex-wrap: wrap;">
       ${project.liveDemo && project.liveDemo !== "#" && project.liveDemo.startsWith("http") ? `
         <a href="${project.liveDemo}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
-          ${ICONS.externalLink} Ghé thăm Website
+          ${ICONS.externalLink} ${isEn ? 'Visit Live Demo' : 'Ghé thăm Website'}
         </a>
       ` : ''}
       ${project.github && project.github !== "#" ? `
         <a href="${project.github}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
-          ${ICONS.code} Mã nguồn GitHub
+          ${ICONS.code} ${isEn ? 'GitHub Source' : 'Mã nguồn GitHub'}
         </a>
       ` : ''}
     </div>
@@ -1231,10 +1373,14 @@ function initContactForm() {
   if (!form) return;
 
   const submitBtn = form.querySelector("button[type='submit']");
-  const originalBtnText = submitBtn ? submitBtn.innerHTML : "Gửi tin nhắn ngay";
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const isEn = currentLang === "en";
+    const dict = (typeof I18N_DICTIONARY !== "undefined" && I18N_DICTIONARY[currentLang]) 
+      ? I18N_DICTIONARY[currentLang].sections 
+      : {};
 
     const nameInput = form.querySelector("input[name='name']");
     const emailInput = form.querySelector("input[name='email']");
@@ -1245,7 +1391,7 @@ function initContactForm() {
     const message = messageInput ? messageInput.value.trim() : "";
 
     if (!name || !email || !message) {
-      showToast("Vui lòng điền đầy đủ họ tên, email và nội dung tin nhắn!");
+      showToast(isEn ? "Please fill in your name, email, and message!" : "Vui lòng điền đầy đủ họ tên, email và nội dung tin nhắn!");
       return;
     }
 
@@ -1257,7 +1403,7 @@ function initContactForm() {
           <svg style="animation: spin 0.8s linear infinite;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <circle cx="12" cy="12" r="9" stroke-dasharray="36" stroke-dashoffset="14" stroke-linecap="round"/>
           </svg>
-          Đang gửi tin nhắn...
+          ${dict.formSending || (isEn ? "Sending message..." : "Đang gửi tin nhắn...")}
         </span>
       `;
     }
@@ -1270,10 +1416,10 @@ function initContactForm() {
           "Accept": "application/json"
         },
         body: JSON.stringify({
-          "Họ và tên": name,
-          "Email liên hệ": email,
-          "Nội dung": message,
-          "_subject": `[Portfolio inshanemode] Lời nhắn mới từ ${name}!`,
+          "Name": name,
+          "Email": email,
+          "Message": message,
+          "_subject": `[Portfolio inshanemode] Message from ${name}!`,
           "_template": "table",
           "_captcha": "false"
         })
@@ -1282,24 +1428,24 @@ function initContactForm() {
       const result = await response.json();
 
       if (response.ok && (result.success === "true" || result.success === true)) {
-        showToast("Cảm ơn bạn! Tin nhắn đã được gửi thành công đến email của Huy.");
+        showToast(dict.formSuccess || (isEn ? "Thank you! Your message has been sent successfully." : "Cảm ơn bạn! Tin nhắn đã được gửi thành công đến email của Huy."));
         form.reset();
       } else if (result.message && result.message.toLowerCase().includes("activation")) {
-        showToast("FormSubmit đã gửi email kích hoạt đến leanhhuy.dev@gmail.com! Bạn hãy vào Gmail bấm 'Activate Form' 1 lần để hoàn tất nhé!");
+        showToast(isEn ? "FormSubmit activation email sent to leanhhuy.dev@gmail.com!" : "FormSubmit đã gửi email kích hoạt đến leanhhuy.dev@gmail.com! Bạn hãy vào Gmail bấm 'Activate Form' 1 lần để hoàn tất nhé!");
         form.reset();
       } else {
-        throw new Error(result.message || "Gửi không thành công");
+        throw new Error(result.message || "Failed to send");
       }
     } catch (err) {
       console.warn("Lỗi gửi qua API FormSubmit, chuyển sang fallback mailto:", err);
-      showToast("Đang mở ứng dụng Email để bạn gửi trực tiếp...");
+      showToast(isEn ? "Opening Email app for direct message..." : "Đang mở ứng dụng Email để bạn gửi trực tiếp...");
       setTimeout(() => {
-        window.location.href = `mailto:leanhhuy.dev@gmail.com?subject=${encodeURIComponent(`[Portfolio] Lời nhắn từ ${name}`)}&body=${encodeURIComponent(`Họ và tên: ${name}\nEmail: ${email}\n\nNội dung:\n${message}`)}`;
+        window.location.href = `mailto:leanhhuy.dev@gmail.com?subject=${encodeURIComponent(`[Portfolio] Message from ${name}`)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`)}`;
       }, 1200);
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
+        submitBtn.textContent = dict.formSubmitBtn || (isEn ? "Send Message" : "Gửi tin nhắn ngay");
       }
     }
   });

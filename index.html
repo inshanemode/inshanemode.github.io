@@ -38,7 +38,7 @@
   </script>
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=6.6" />
+  <link rel="stylesheet" href="css/style.css?v=7.0" />
   <style>
     /* Nút Chuyển Giao diện Nền Hồng Thật Sự (Solid Pink #ec4899, Icon Trắng) */
     .theme-toggle-btn,
@@ -116,18 +116,26 @@
 
       <!-- Desktop Nav Links -->
       <ul class="nav-links" id="nav-links-menu">
-        <li><a href="#projects" class="nav-link">Dự án</a></li>
-        <li><a href="#skills" class="nav-link">Kỹ năng</a></li>
-        <li><a href="#timeline" class="nav-link">Lộ trình</a></li>
-        <li><a href="#contact" class="nav-link">Liên hệ</a></li>
+        <li><a href="#projects" class="nav-link" data-i18n="nav.projects">Dự án</a></li>
+        <li><a href="#skills" class="nav-link" data-i18n="nav.skills">Kỹ năng</a></li>
+        <li><a href="#timeline" class="nav-link" data-i18n="nav.journey">Lộ trình</a></li>
+        <li><a href="#testimonials" class="nav-link" data-i18n="nav.testimonials">Lời nhận xét</a></li>
+        <li><a href="#contact" class="nav-link" data-i18n="nav.contact">Liên hệ</a></li>
       </ul>
 
-      <!-- Navbar Actions (Theme Switcher & CTA) -->
+      <!-- Navbar Actions (Lang Switcher, Theme Switcher & CTA) -->
       <div class="nav-actions">
+        <!-- Language Switcher Pill -->
+        <div class="lang-switcher" id="lang-switcher" role="group" aria-label="Bộ chọn ngôn ngữ">
+          <button type="button" class="lang-btn active" data-lang="vi" aria-label="Tiếng Việt">VN</button>
+          <span class="lang-sep">/</span>
+          <button type="button" class="lang-btn" data-lang="en" aria-label="English">EN</button>
+        </div>
+
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Đổi giao diện Sáng / Tối" title="Đổi giao diện Sáng / Tối">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
         </button>
-        <a href="#contact" class="btn btn-primary btn-sm btn-contact-nav">
+        <a href="#contact" class="btn btn-primary btn-sm btn-contact-nav" data-i18n="nav.contact">
           Kết nối
         </a>
         <button id="mobile-menu-toggle" class="mobile-toggle" aria-label="Mở menu di động">
@@ -159,16 +167,16 @@
                 <span class="pulse-dot"></span>
                 <span class="pulse-wave"></span>
               </span>
-              <span id="hero-status-text">Sẵn sàng đón nhận cơ hội mới</span>
+              <span id="hero-status-text" data-i18n="hero.status">Sẵn sàng đón nhận cơ hội mới</span>
             </div>
 
             <h1 class="hero-title">
-              Xin chào, mình là <br />
+              <span data-i18n="hero.greeting">Xin chào, mình là</span> <br />
               <span id="hero-name" class="gradient-text">Lê Anh Huy</span>
             </h1>
 
             <div class="hero-subtitle-capsule">
-              <span>Một</span> <span id="typewriter-text" class="typewriter-wrapper"></span>
+              <span id="hero-prefix-text">✨</span> <span id="typewriter-text" class="typewriter-wrapper"></span>
             </div>
 
             <p id="hero-bio" class="hero-bio">
@@ -177,8 +185,8 @@
 
             <!-- Clean Luxury Buttons -->
             <div class="hero-ctas">
-              <a href="#projects" class="btn-clean-primary">Khám phá dự án</a>
-              <a href="#contact" class="btn-clean-secondary">Liên hệ hợp tác</a>
+              <a href="#projects" class="btn-clean-primary" data-i18n="hero.ctaProjects">Khám phá dự án</a>
+              <a href="#contact" class="btn-clean-secondary" data-i18n="hero.ctaContact">Liên hệ hợp tác</a>
             </div>
 
             <div class="hero-socials">
@@ -286,7 +294,7 @@
         <div class="showcase-box" id="showcase-box">
           
           <div class="showcase-header">
-            <h2 class="showcase-title">Bộ Sưu Tập Dự Án Tiêu Biểu</h2>
+            <h2 class="showcase-title" data-i18n="sections.projectsTitle">Bộ Sưu Tập Dự Án Tiêu Biểu</h2>
           </div>
 
           <!-- Horizontal track containing the project cards -->
@@ -303,8 +311,8 @@
     <section id="skills" class="skills-section">
       <div class="container">
         <div class="text-center">
-          <span class="section-tag">Năng lực cốt lõi</span>
-          <h2 class="section-title">Kỹ năng & Công nghệ</h2>
+          <span class="section-tag" data-i18n="sections.skillsBadge">Năng lực cốt lõi</span>
+          <h2 class="section-title" data-i18n="sections.skillsTitle">Kỹ năng & Công nghệ</h2>
         </div>
 
         <div class="skills-grid" id="skills-container" style="margin-top: 48px;">
@@ -317,8 +325,8 @@
     <section id="timeline" class="timeline-section">
       <div class="container">
         <div class="text-center">
-          <span class="section-tag">Hành trình</span>
-          <h2 class="section-title">Kinh nghiệm & Học vấn</h2>
+          <span class="section-tag" data-i18n="sections.timelineBadge">Hành trình</span>
+          <h2 class="section-title" data-i18n="sections.timelineTitle">Kinh nghiệm & Học vấn</h2>
         </div>
 
         <div class="timeline-wrapper" id="timeline-container">
@@ -331,8 +339,8 @@
     <section id="testimonials" class="about-section" style="padding: 70px 0;">
       <div class="container">
         <div class="text-center reveal">
-          <span class="section-tag">Góc nhìn đồng hành</span>
-          <h2 class="section-title">Nhận xét từ bạn bè & đồng nghiệp</h2>
+          <span class="section-tag" data-i18n="sections.testimonialsBadge">Góc nhìn đồng hành</span>
+          <h2 class="section-title" data-i18n="sections.testimonialsTitle">Nhận xét từ bạn bè & đồng nghiệp</h2>
         </div>
 
         <div class="testimonials-grid" id="testimonials-container">
@@ -345,8 +353,8 @@
     <section id="contact" class="contact-section">
       <div class="container">
         <div class="text-center reveal">
-          <span class="section-tag">Kết nối</span>
-          <h2 class="section-title">Cùng nhau tạo nên điều tuyệt vời!</h2>
+          <span class="section-tag" data-i18n="sections.contactBadge">Kết nối</span>
+          <h2 class="section-title" data-i18n="sections.contactTitle">Cùng nhau tạo nên điều tuyệt vời!</h2>
         </div>
 
         <div class="contact-grid">
@@ -357,7 +365,7 @@
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
               </div>
               <div class="contact-detail">
-                <h4>Email trực tiếp</h4>
+                <h4 data-i18n="sections.contactEmailLabel">Email trực tiếp</h4>
                 <a id="contact-email-link" href="mailto:leanhhuy.dev@gmail.com">
                   <span id="contact-email-text">leanhhuy.dev@gmail.com</span>
                 </a>
@@ -369,7 +377,7 @@
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
               </div>
               <div class="contact-detail">
-                <h4>Điện thoại / Zalo</h4>
+                <h4 data-i18n="sections.contactPhoneLabel">Điện thoại / Zalo</h4>
                 <a id="contact-phone-link" href="tel:+84974784812">
                   <span id="contact-phone-text">0974 784 812</span>
                 </a>
@@ -381,8 +389,8 @@
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
               </div>
               <div class="contact-detail">
-                <h4>Địa điểm làm việc</h4>
-                <p id="contact-location-text">TP. Hồ Chí Minh, Việt Nam</p>
+                <h4 data-i18n="sections.contactLocationLabel">Địa điểm làm việc</h4>
+                <p id="contact-location-text">Việt Nam (Hỗ trợ Remote)</p>
               </div>
             </div>
           </div>
@@ -395,21 +403,21 @@
               <input type="hidden" name="_subject" value="[Portfolio inshanemode] Tin nhắn mới từ khách xem web!" />
 
               <div class="form-group">
-                <label class="form-label" for="sender-name">Họ và tên của bạn</label>
-                <input type="text" id="sender-name" name="name" class="form-control" placeholder="Ví dụ: Nguyễn Văn Nam" required />
+                <label class="form-label" for="sender-name" data-i18n="sections.formNameLabel">Họ và tên của bạn</label>
+                <input type="text" id="sender-name" name="name" class="form-control" placeholder="Ví dụ: Nguyễn Văn Nam" data-i18n-placeholder="sections.formNamePlaceholder" required />
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="sender-email">Địa chỉ Email</label>
-                <input type="email" id="sender-email" name="email" class="form-control" placeholder="name@company.com" required />
+                <label class="form-label" for="sender-email" data-i18n="sections.formEmailLabel">Địa chỉ Email</label>
+                <input type="email" id="sender-email" name="email" class="form-control" placeholder="name@company.com" data-i18n-placeholder="sections.formEmailPlaceholder" required />
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="sender-message">Nội dung tin nhắn / Yêu cầu dự án</label>
-                <textarea id="sender-message" name="message" class="form-control" placeholder="Mô tả ngắn gọn về nhu cầu hoặc lời nhắn của bạn..." required></textarea>
+                <label class="form-label" for="sender-message" data-i18n="sections.formMessageLabel">Nội dung tin nhắn / Yêu cầu dự án</label>
+                <textarea id="sender-message" name="message" class="form-control" placeholder="Mô tả ngắn gọn về nhu cầu hoặc lời nhắn của bạn..." data-i18n-placeholder="sections.formMessagePlaceholder" required></textarea>
               </div>
 
-              <button type="submit" class="btn btn-primary" style="width: 100%;">
+              <button type="submit" id="contact-submit-btn" class="btn btn-primary" style="width: 100%;" data-i18n="sections.formSubmitBtn">
                 Gửi tin nhắn ngay
               </button>
             </form>
@@ -422,7 +430,7 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="container footer-inner">
-      <div class="footer-text">
+      <div class="footer-text" id="footer-text-copyright" data-i18n="footer.copyright">
         © <span id="current-year">2026</span> Lê Anh Huy (inshanemode). Được thiết kế và sáng tạo với niềm đam mê.
       </div>
       <div class="footer-text" style="font-size: 0.85rem; color: var(--text-muted);">
@@ -451,8 +459,8 @@
   <!-- Scripts: Local GSAP & ScrollTrigger (100% Reliable Offline & Local File) -->
   <script src="js/vendor/gsap.min.js"></script>
   <script src="js/vendor/ScrollTrigger.min.js"></script>
-  <script src="js/data.js?v=5.2"></script>
-  <script src="js/main.js?v=7.2"></script>
+  <script src="js/data.js?v=6.0"></script>
+  <script src="js/main.js?v=8.0"></script>
   <script>
     document.getElementById("current-year").textContent = new Date().getFullYear();
   </script>
