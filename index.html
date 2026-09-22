@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lê Anh Huy (inshanemode) - IT Graduate & Creative Portfolio</title>
+  <meta name="description" content="Portfolio cá nhân của Lê Anh Huy (inshanemode) - Cử nhân Công nghệ Thông tin, đam mê gaming, đánh cầu lông và sáng tạo những thứ chưa bao giờ làm." />
+  <meta name="keywords" content="Lê Anh Huy, inshanemode, Portfolio, IT Graduate, Công nghệ Thông tin, Web Developer, Gaming, Badminton, Cầu lông, Creative Builder" />
+  
+  <!-- Open Graph / SEO -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Lê Anh Huy (inshanemode) - IT Graduate & Creative Portfolio" />
+  <meta property="og:description" content="Khám phá không gian sáng tạo của Lê Anh Huy (inshanemode) - Tốt nghiệp ngành CNTT, đam mê gaming, cầu lông và thử thách mới." />
+
+  <!-- Khởi tạo Theme tức thời theo trạng thái hệ thống/thiết bị (tránh giật màu FOUC) -->
+  <script>
+    (function() {
+      try {
+        var stored = localStorage.getItem("portfolio-theme");
+        if (stored === "light" || stored === "dark") {
+          document.documentElement.setAttribute("data-theme", stored);
+          return;
+        }
+        var isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var isLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+        if (isDark) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        } else if (isLight) {
+          document.documentElement.setAttribute("data-theme", "light");
+        } else {
+          var h = new Date().getHours();
+          document.documentElement.setAttribute("data-theme", (h >= 6 && h < 18) ? "light" : "dark");
+        }
+      } catch(e) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css?v=6.6" />
+  <style>
+    /* Nút Chuyển Giao diện Nền Hồng Thật Sự (Solid Pink #ec4899, Icon Trắng) */
+    .theme-toggle-btn,
+    html[data-theme="light"] .theme-toggle-btn,
+    [data-theme="light"] .theme-toggle-btn,
+    html[data-theme="dark"] .theme-toggle-btn,
+    [data-theme="dark"] .theme-toggle-btn {
+      background: #ec4899 !important;
+      color: #ffffff !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-theme="light"] .theme-toggle-btn:hover,
+    [data-theme="light"] .theme-toggle-btn:hover {
+      background: #db2777 !important;
+      color: #ffffff !important;
+      border: none !important;
+      transform: translateY(-2px) rotate(15deg) scale(1.08) !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-theme="dark"] .theme-toggle-btn:hover,
+    [data-theme="dark"] .theme-toggle-btn:hover {
+      background: #db2777 !important;
+      color: #ffffff !important;
+      border: none !important;
+      transform: translateY(-2px) scale(1.08) !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    html[data-theme="dark"] .theme-toggle-btn:hover svg,
+    [data-theme="dark"] .theme-toggle-btn:hover svg {
+      animation: heartBeat 0.8s ease infinite !important;
+    }
+  </style>
+  <script>
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+  </script>
+</head>
+<body>
+  <!-- Opening overlay: appears on first load and dissolves on click -->
+  <div id="site-intro-overlay" class="site-intro-overlay" role="dialog" aria-label="welcome to inshanemode world">
+    <div id="site-intro-heart" class="site-intro-heart" aria-hidden="true">
+      <svg viewBox="0 0 100 100" class="heart-glow-svg">
+        <defs>
+          <radialGradient id="softPinkHeartGrad" cx="50%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="#f472b6" stop-opacity="0.85" />
+            <stop offset="55%" stop-color="#fb7185" stop-opacity="0.65" />
+            <stop offset="80%" stop-color="#fda4af" stop-opacity="0.4" />
+            <stop offset="100%" stop-color="#fbcfe8" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <path d="M50,88 C20,60 4,38 4,22 A20,20 0 0,1 50,18 A20,20 0 0,1 96,22 C96,38 80,60 50,88 Z" fill="url(#softPinkHeartGrad)" />
+      </svg>
+    </div>
+    <canvas id="site-intro-burst-canvas" class="site-intro-burst-canvas"></canvas>
+    <button class="site-intro-surface" type="button" aria-label="Vào website">
+      <span class="site-intro-wordmark" aria-hidden="true">welcome to inshanemode world</span>
+    </button>
+  </div>
+
+  <!-- Ambient Background Glows -->
+  <div class="ambient-glow-top"></div>
+  <div class="ambient-glow-bottom"></div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="#hero" class="brand-logo">
+        <span id="brand-name">inshanemode</span>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <ul class="nav-links" id="nav-links-menu">
+        <li><a href="#projects" class="nav-link">Dự án</a></li>
+        <li><a href="#skills" class="nav-link">Kỹ năng</a></li>
+        <li><a href="#timeline" class="nav-link">Lộ trình</a></li>
+        <li><a href="#contact" class="nav-link">Liên hệ</a></li>
+      </ul>
+
+      <!-- Navbar Actions (Theme Switcher & CTA) -->
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Đổi giao diện Sáng / Tối" title="Đổi giao diện Sáng / Tối">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+        </button>
+        <a href="#contact" class="btn btn-primary btn-sm btn-contact-nav">
+          Kết nối
+        </a>
+        <button id="mobile-menu-toggle" class="mobile-toggle" aria-label="Mở menu di động">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- MASTER STAGE: HERO BANNER FADE -> RISING CUTE SHOWCASE -> HORIZONTAL PINNING -->
+    <section id="hero-showcase-stage" class="hero-showcase-stage">
+      
+      <!-- 1. HERO LAYER: Sẽ mờ dần khi cuộn chuột xuống -->
+      <div class="hero-stage-layer" id="hero-layer">
+        <!-- Canvas hạt phát sáng tương tác trỏ chuột -->
+        <canvas id="hero-particles"></canvas>
+
+        <div class="container hero-grid">
+          <div class="hero-text-content">
+            <!-- Availability Status Badge Luxury Pill -->
+            <div class="hero-status-pill">
+              <span class="status-jewel">
+                <span class="pulse-dot"></span>
+                <span class="pulse-wave"></span>
+              </span>
+              <span id="hero-status-text">Sẵn sàng đón nhận cơ hội mới</span>
+            </div>
+
+            <h1 class="hero-title">
+              Xin chào, mình là <br />
+              <span id="hero-name" class="gradient-text">Lê Anh Huy</span>
+            </h1>
+
+            <div class="hero-subtitle-capsule">
+              <span>Một</span> <span id="typewriter-text" class="typewriter-wrapper"></span>
+            </div>
+
+            <p id="hero-bio" class="hero-bio">
+              Cử nhân Công nghệ Thông tin luôn tràn đầy năng lượng sáng tạo những thứ mình chưa bao giờ làm. Đam mê gaming giải trí, những trận cầu lông nảy lửa và xây dựng sản phẩm công nghệ độc đáo.
+            </p>
+
+            <!-- Clean Luxury Buttons -->
+            <div class="hero-ctas">
+              <a href="#projects" class="btn-clean-primary">Khám phá dự án</a>
+              <a href="#contact" class="btn-clean-secondary">Liên hệ hợp tác</a>
+            </div>
+
+            <div class="hero-socials">
+              <div id="hero-social-links" style="display: flex; gap: 14px;"></div>
+            </div>
+
+            <!-- Hero Quick Highlights / Stats (Gom từ phần About vào Hero) -->
+            <div class="hero-quick-stats" id="hero-quick-stats">
+              <div class="quick-stat-card">
+                <span class="quick-stat-val">IT Grad</span>
+                <span class="quick-stat-lbl">Tốt nghiệp CNTT</span>
+              </div>
+              <div class="quick-stat-card">
+                <span class="quick-stat-val">100%</span>
+                <span class="quick-stat-lbl">Sáng tạo điều mới</span>
+              </div>
+              <div class="quick-stat-card">
+                <span class="quick-stat-val">Gaming</span>
+                <span class="quick-stat-lbl">Tư duy chiến thuật</span>
+              </div>
+              <div class="quick-stat-card">
+                <span class="quick-stat-val">Badminton</span>
+                <span class="quick-stat-lbl">Năng lượng thể thao</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero Visual Profile Card với hiệu ứng 3D Tilt & Spotlight -->
+          <div class="hero-visual">
+            <div class="profile-card-wrapper">
+              <!-- Floating Badge Left -->
+              <div class="floating-badge badge-left">
+                <div>
+                  <strong style="display: block; font-size: 0.85rem;">Cầu Lông & Gaming</strong>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Sở thích cá nhân</span>
+                </div>
+              </div>
+
+              <!-- Profile Card with Enhanced 3D Tilt & Multi-Photo Carousel -->
+              <div class="profile-card spotlight-card tilt-card" id="hero-profile-card">
+                <div class="profile-image-container" id="profile-image-carousel">
+                  <img 
+                    src="assets/1.jpg" 
+                    alt="Lê Anh Huy (inshanemode) Avatar 1" 
+                    class="profile-image active" 
+                    data-index="0"
+                  />
+                  <img 
+                    src="assets/2.jpg" 
+                    alt="Lê Anh Huy (inshanemode) Avatar 2" 
+                    class="profile-image" 
+                    data-index="1"
+                  />
+                  <img 
+                    src="assets/3.jpg" 
+                    alt="Lê Anh Huy (inshanemode) Avatar 3" 
+                    class="profile-image" 
+                    data-index="2"
+                  />
+                  <img 
+                    src="assets/4.jpg" 
+                    alt="Lê Anh Huy (inshanemode) Avatar 4" 
+                    class="profile-image" 
+                    data-index="3"
+                  />
+                  <div class="profile-carousel-dots" id="profile-carousel-dots" aria-label="Bộ chọn ảnh đại diện">
+                    <span class="carousel-dot active" data-index="0"></span>
+                    <span class="carousel-dot" data-index="1"></span>
+                    <span class="carousel-dot" data-index="2"></span>
+                    <span class="carousel-dot" data-index="3"></span>
+                  </div>
+                </div>
+                <div class="profile-card-meta">
+                  <h3>Lê Anh Huy</h3>
+                  <p>IT Graduate · inshanemode</p>
+                </div>
+              </div>
+
+              <!-- Floating Badge Right -->
+              <div class="floating-badge badge-right">
+                <div>
+                  <strong style="display: block; font-size: 0.85rem;">Sáng Tạo Mới</strong>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Khám phá điều chưa làm</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Sleek Scroll Hint (Chỉ dấu mũi tên cuộn) -->
+        <div class="scroll-down-hint">
+          <a href="#projects" class="hint-pill" aria-label="Cuộn xuống xem dự án">
+            <span class="hint-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="19 12 12 19 5 12"></polyline>
+              </svg>
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 2. SHOWCASE LAYER: Bộ sưu tập dự án trồi lên & trượt ngang -->
+      <div class="showcase-layer" id="projects">
+        <div class="showcase-box" id="showcase-box">
+          
+          <div class="showcase-header">
+            <h2 class="showcase-title">Bộ Sưu Tập Dự Án Tiêu Biểu</h2>
+          </div>
+
+          <!-- Horizontal track containing the project cards -->
+          <div class="horizontal-track" id="horizontal-track">
+            <!-- Được render động từ data.js qua main.js -->
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SKILLS SECTION -->
+    <section id="skills" class="skills-section">
+      <div class="container">
+        <div class="text-center">
+          <span class="section-tag">Năng lực cốt lõi</span>
+          <h2 class="section-title">Kỹ năng & Công nghệ</h2>
+        </div>
+
+        <div class="skills-grid" id="skills-container" style="margin-top: 48px;">
+          <!-- Được render từ data.js với thanh tiến độ chạy mượt -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TIMELINE SECTION -->
+    <section id="timeline" class="timeline-section">
+      <div class="container">
+        <div class="text-center">
+          <span class="section-tag">Hành trình</span>
+          <h2 class="section-title">Kinh nghiệm & Học vấn</h2>
+        </div>
+
+        <div class="timeline-wrapper" id="timeline-container">
+          <!-- Được render từ data.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS SECTION -->
+    <section id="testimonials" class="about-section" style="padding: 70px 0;">
+      <div class="container">
+        <div class="text-center reveal">
+          <span class="section-tag">Góc nhìn đồng hành</span>
+          <h2 class="section-title">Nhận xét từ bạn bè & đồng nghiệp</h2>
+        </div>
+
+        <div class="testimonials-grid" id="testimonials-container">
+          <!-- Được render từ data.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section id="contact" class="contact-section">
+      <div class="container">
+        <div class="text-center reveal">
+          <span class="section-tag">Kết nối</span>
+          <h2 class="section-title">Cùng nhau tạo nên điều tuyệt vời!</h2>
+        </div>
+
+        <div class="contact-grid">
+          <!-- Contact Info -->
+          <div class="contact-info-card spotlight-card reveal reveal-left">
+            <div class="contact-item">
+              <div class="contact-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </div>
+              <div class="contact-detail">
+                <h4>Email trực tiếp</h4>
+                <a id="contact-email-link" href="mailto:leanhhuy.dev@gmail.com">
+                  <span id="contact-email-text">leanhhuy.dev@gmail.com</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <div class="contact-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              </div>
+              <div class="contact-detail">
+                <h4>Điện thoại / Zalo</h4>
+                <a id="contact-phone-link" href="tel:+84974784812">
+                  <span id="contact-phone-text">0974 784 812</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <div class="contact-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              </div>
+              <div class="contact-detail">
+                <h4>Địa điểm làm việc</h4>
+                <p id="contact-location-text">TP. Hồ Chí Minh, Việt Nam</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Form -->
+          <div class="contact-form-card spotlight-card reveal reveal-right">
+            <form id="portfolio-contact-form" action="https://formsubmit.co/leanhhuy.dev@gmail.com" method="POST">
+              <input type="hidden" name="_captcha" value="false" />
+              <input type="hidden" name="_template" value="table" />
+              <input type="hidden" name="_subject" value="[Portfolio inshanemode] Tin nhắn mới từ khách xem web!" />
+
+              <div class="form-group">
+                <label class="form-label" for="sender-name">Họ và tên của bạn</label>
+                <input type="text" id="sender-name" name="name" class="form-control" placeholder="Ví dụ: Nguyễn Văn Nam" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="sender-email">Địa chỉ Email</label>
+                <input type="email" id="sender-email" name="email" class="form-control" placeholder="name@company.com" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="sender-message">Nội dung tin nhắn / Yêu cầu dự án</label>
+                <textarea id="sender-message" name="message" class="form-control" placeholder="Mô tả ngắn gọn về nhu cầu hoặc lời nhắn của bạn..." required></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width: 100%;">
+                Gửi tin nhắn ngay
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-text">
+        © <span id="current-year">2026</span> Lê Anh Huy (inshanemode). Được thiết kế và sáng tạo với niềm đam mê.
+      </div>
+      <div class="footer-text" style="font-size: 0.85rem; color: var(--text-muted);">
+        Chế độ xem tối ưu cho mọi thiết bị (Responsive Mobile & Desktop)
+      </div>
+    </div>
+  </footer>
+
+  <!-- Project Details Modal -->
+  <div id="project-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <button class="modal-close-btn" onclick="closeProjectModal()" aria-label="Đóng hộp thoại">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <div class="modal-body" id="modal-project-content">
+        <!-- Được chèn động bởi JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Back to Top Button -->
+  <button id="back-to-top-btn" class="back-to-top" aria-label="Lên đầu trang">
+    <!-- Icon sẽ được JS nạp -->
+  </button>
+
+  <!-- Scripts: Local GSAP & ScrollTrigger (100% Reliable Offline & Local File) -->
+  <script src="js/vendor/gsap.min.js"></script>
+  <script src="js/vendor/ScrollTrigger.min.js"></script>
+  <script src="js/data.js?v=5.2"></script>
+  <script src="js/main.js?v=7.2"></script>
+  <script>
+    document.getElementById("current-year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
