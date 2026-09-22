@@ -602,6 +602,30 @@ function initProfileImageCarousel() {
       }
     });
   });
+
+  // Hỗ trợ vuốt chạm cảm ứng (Touch swipe) trái / phải mượt mà trên điện thoại
+  let touchStartX = 0;
+  let touchEndX = 0;
+  container.addEventListener("touchstart", (e) => {
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      touchStartX = e.changedTouches[0].screenX;
+    }
+  }, { passive: true });
+
+  container.addEventListener("touchend", (e) => {
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+      if (diff > 35) {
+        nextImage();
+        startTimer();
+      } else if (diff < -35) {
+        const prevIdx = (currentIndex - 1 + images.length) % images.length;
+        showImage(prevIdx);
+        startTimer();
+      }
+    }
+  }, { passive: true });
 }
 
 function initTiltAndSpotlight() {
@@ -1520,17 +1544,69 @@ function initMobileMenu() {
   const toggleBtn = document.getElementById("mobile-menu-toggle");
   const navLinks = document.getElementById("nav-links-menu");
 
-  if (toggleBtn && navLinks) {
-    toggleBtn.addEventListener("click", () => {
-      navLinks.classList.toggle("open");
-    });
+  if (!toggleBtn || !navLinks) return;
 
-    navLinks.querySelectorAll(".nav-link").forEach(link => {
-      link.addEventListener("click", () => {
-        navLinks.classList.remove("open");
-      });
-    });
-  }
+  const HAMBURGER_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>`;
+
+  const CLOSE_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>`;
+
+  const closeMenu = () => {
+    navLinks.classList.remove("open");
+    toggleBtn.classList.remove("is-open");
+    toggleBtn.setAttribute("aria-expanded", "false");
+    toggleBtn.innerHTML = HAMBURGER_SVG;
+  };
+
+  const openMenu = () => {
+    navLinks.classList.add("open");
+    toggleBtn.classList.add("is-open");
+    toggleBtn.setAttribute("aria-expanded", "true");
+    toggleBtn.innerHTML = CLOSE_SVG;
+  };
+
+  toggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = navLinks.classList.contains("open");
+    if (isOpen) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
+
+  navLinks.querySelectorAll(".nav-link").forEach((link) => {
+    link.addEventListener("click", closeMenu);
+  });
+
+  // Đóng khi chạm ra ngoài menu
+  document.addEventListener("click", (e) => {
+    if (!navLinks.contains(e.target) && !toggleBtn.contains(e.target)) {
+      if (navLinks.classList.contains("open")) {
+        closeMenu();
+      }
+    }
+  });
+
+  // Đóng khi nhấn phím Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && navLinks.classList.contains("open")) {
+      closeMenu();
+    }
+  });
+
+  // Đóng menu nếu resize ra màn hình lớn
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 768 && navLinks.classList.contains("open")) {
+      closeMenu();
+    }
+  });
 }
 
 /* ==========================================================================
@@ -1674,17 +1750,20 @@ function initCuteRisingAndHorizontalPin() {
     return;
   }
 
+  const isMobile = window.innerWidth <= 768;
+  const pinDistance = isMobile ? 1800 : 3600;
+
   // Khoảng cách cần trượt ngang
-  const getScrollAmount = () => -(track.scrollWidth - window.innerWidth + (window.innerWidth * 0.14));
+  const getScrollAmount = () => -(track.scrollWidth - window.innerWidth + (window.innerWidth * (isMobile ? 0.08 : 0.14)));
 
   // Master Timeline liên kết duy nhất 1 ScrollTrigger Pin
   const masterTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: "#hero-showcase-stage",
       start: "top top",           // Ghim lại ngay từ đỉnh trang
-      end: "+=3600",             // Tổng thời lượng cuộn trồi lên + trượt ngang
+      end: `+=${pinDistance}`,    // Điều chỉnh độ dài ghim thân thiện với ngón tay vuốt trên mobile
       pin: true,                 // Ghim màn hình lại
-      scrub: 1.2,                // Cuộn mượt mà có độ nảy nhẹ
+      scrub: isMobile ? 0.8 : 1.2,// Cuộn mượt mà có độ nảy nhẹ
       invalidateOnRefresh: true,
       markers: false,
       id: "Cute-Rising-Horizontal"
@@ -1960,9 +2039,10 @@ function initScrollTriggerSkillsAndTimeline() {
       }
 
       // Quãng đường cuộn khi màn hình ghim đứng yên:
-      // Mỗi lần chuyển thẻ tương ứng 700px lăn chuột mượt mà
+      // Mobile: 420px giúp vuốt nhẹ nhàng, Desktop: 700px lăn chuột chuẩn xác
+      const isMobile = window.innerWidth <= 768;
       const numTransitions = cards.length - 1;
-      const scrollDistance = numTransitions * 700;
+      const scrollDistance = numTransitions * (isMobile ? 420 : 700);
 
       const updateDots = () => {
         const curTime = stackTL.time();
@@ -1985,10 +2065,10 @@ function initScrollTriggerSkillsAndTimeline() {
         scrollTrigger: {
           id: "Timeline-Stack-Pin",
           trigger: stage,
-          start: "center 52%",   // Kéo thẻ lên tới chính giữa màn hình mới ghim và cuộn thẻ
+          start: isMobile ? "center 56%" : "center 52%",
           end: `+=${scrollDistance}`,
           pin: timelineSection,
-          scrub: 0.8,
+          scrub: isMobile ? 0.6 : 0.8,
           anticipatePin: 1
         }
       });
