@@ -666,35 +666,69 @@ function initTiltAndSpotlight() {
 /* ==========================================================================
    4. SCROLL REVEAL & COUNT-UP STATS
    ========================================================================== */
-function initScrollReveal() {
-  const revealElements = document.querySelectorAll(".reveal");
+let globalRevealObserver = null;
 
-  const revealObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("reveal-visible");
-        
-        // Nếu phần tử chứa số đếm thống kê thì kích hoạt count-up
-        if (entry.target.classList.contains("stat-card")) {
-          animateCountUp(entry.target);
-        }
+function observeReveals() {
+  const unrevealed = document.querySelectorAll(".reveal:not(.reveal-visible)");
+  if (unrevealed.length === 0) return;
 
-        // Bật thanh kỹ năng nếu có
-        const skillBars = entry.target.querySelectorAll(".skill-bar-fill");
-        skillBars.forEach(bar => {
-          const targetWidth = bar.getAttribute("data-width") || "80%";
-          bar.style.width = targetWidth;
-        });
-
-        observer.unobserve(entry.target);
+  const vh = window.innerHeight || document.documentElement.clientHeight || 800;
+  unrevealed.forEach(el => {
+    const rect = el.getBoundingClientRect();
+    // Nếu phần tử đã nằm trong hoặc gần viewport, hiện ngay lập tức tránh bị kẹt trắng
+    if (rect.top < vh + 80 && rect.bottom > -80) {
+      el.classList.add("reveal-visible");
+      if (el.classList.contains("stat-card")) {
+        animateCountUp(el);
       }
-    });
-  }, {
-    threshold: 0.05,
-    rootMargin: "0px 0px 0px 0px"
+      const skillBars = el.querySelectorAll(".skill-bar-fill");
+      skillBars.forEach(bar => {
+        const targetWidth = bar.getAttribute("data-width") || "80%";
+        bar.style.width = targetWidth;
+      });
+      if (globalRevealObserver) {
+        globalRevealObserver.unobserve(el);
+      }
+    } else if (globalRevealObserver) {
+      globalRevealObserver.observe(el);
+    }
   });
+}
 
-  revealElements.forEach(el => revealObserver.observe(el));
+function initScrollReveal() {
+  if ("IntersectionObserver" in window) {
+    globalRevealObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("reveal-visible");
+          
+          // Nếu phần tử chứa số đếm thống kê thì kích hoạt count-up
+          if (entry.target.classList.contains("stat-card")) {
+            animateCountUp(entry.target);
+          }
+
+          // Bật thanh kỹ năng nếu có
+          const skillBars = entry.target.querySelectorAll(".skill-bar-fill");
+          skillBars.forEach(bar => {
+            const targetWidth = bar.getAttribute("data-width") || "80%";
+            bar.style.width = targetWidth;
+          });
+
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.02,
+      rootMargin: "60px 0px 60px 0px"
+    });
+  }
+
+  observeReveals();
+
+  // Scroll listener dự phòng giúp mọi thẻ .reveal luôn hiển thị an toàn
+  window.addEventListener("scroll", () => {
+    observeReveals();
+  }, { passive: true });
 }
 
 // Hiệu ứng đếm số mượt mà từ 0 lên giá trị mục tiêu
@@ -822,25 +856,138 @@ function setLanguage(lang, isInitial = false) {
       `).join("");
     }
 
-    // Tái hiển thị các danh mục theo ngôn ngữ được chọn
-    renderSkills(data.skills);
-    renderProjects(data.projects);
-    renderTimeline(data.timeline);
-    renderTestimonials(data.testimonials);
+    // Cập nhật nội dung theo ngôn ngữ: ban đầu render DOM, sau đó chỉ cập nhật text in-place
+    const hasInitialRender = document.querySelector("#skills-container .skill-category-card");
+    if (isInitial || !hasInitialRender) {
+      renderSkills(data.skills);
+      renderProjects(data.projects);
+      renderTimeline(data.timeline);
+      renderTestimonials(data.testimonials);
+    } else {
+      updateSkillsLanguage(lang);
+      updateProjectsLanguage(lang);
+      updateTimelineLanguage(lang);
+      updateTestimonialsLanguage(lang);
+    }
 
     // Cập nhật chuỗi chữ xoay vòng hiệu ứng gõ máy
     updateTypewriterTitles(langData.rotatingTitles);
   }
 
-  // 4. Kích hoạt lại hiệu ứng 3D tilt và spotlight cho các thẻ mới render
-  if (typeof initTiltAndSpotlight === "function" && !isInitial) {
-    setTimeout(initTiltAndSpotlight, 50);
+  // 4. Quét lại các phần tử reveal đảm bảo không bị sót hoặc kẹt trắng
+  if (typeof observeReveals === "function") {
+    observeReveals();
   }
 
   // 5. Cập nhật ScrollTrigger để hiệu ứng cuộn luôn chuẩn xác
   if (typeof ScrollTrigger !== "undefined") {
     ScrollTrigger.refresh();
   }
+}
+
+function updateSkillsLanguage(lang) {
+  if (typeof PORTFOLIO_DATA === "undefined") return;
+  const isEn = lang === "en";
+  const cards = document.querySelectorAll("#skills-container .skill-category-card");
+  const skills = PORTFOLIO_DATA.skills;
+  cards.forEach((card, idx) => {
+    const group = skills[idx];
+    if (!group) return;
+    const title = isEn ? (group.category_en || group.category_vi) : (group.category_vi || group.category_en);
+    const desc = isEn ? (group.description_en || group.description_vi) : (group.description_vi || group.description_en);
+    const h3 = card.querySelector(".skill-cat-header h3");
+    const p = card.querySelector(".skill-cat-header p");
+    if (h3) h3.textContent = title;
+    if (p) p.textContent = desc;
+
+    const itemEls = card.querySelectorAll(".skill-item");
+    (group.items || []).forEach((item, iIdx) => {
+      const itemEl = itemEls[iIdx];
+      if (!itemEl) return;
+      const itemName = isEn ? (item.name_en || item.name_vi) : (item.name_vi || item.name_en);
+      const nameSpan = itemEl.querySelector(".skill-name");
+      if (nameSpan) nameSpan.textContent = itemName;
+    });
+  });
+}
+
+function updateProjectsLanguage(lang) {
+  if (typeof PORTFOLIO_DATA === "undefined") return;
+  const isEn = lang === "en";
+  const cards = document.querySelectorAll("#horizontal-track .cute-project-card");
+  const projects = PORTFOLIO_DATA.projects;
+  cards.forEach((card, idx) => {
+    const proj = projects[idx];
+    if (!proj) return;
+    const pInfo = isEn ? (proj.en || proj.vi || proj) : (proj.vi || proj.en || proj);
+    const title = pInfo.title || proj.title;
+    const desc = pInfo.description || proj.description;
+
+    const titleEl = card.querySelector(".card-title");
+    const descEl = card.querySelector(".card-desc");
+    if (titleEl) titleEl.textContent = title;
+    if (descEl) descEl.textContent = desc;
+    card.setAttribute("aria-label", (isEn ? "View details for " : "Xem chi tiết ") + title);
+  });
+}
+
+function updateTimelineLanguage(lang) {
+  if (typeof PORTFOLIO_DATA === "undefined") return;
+  const isEn = lang === "en";
+  const timeline = PORTFOLIO_DATA.timeline;
+
+  const dots = document.querySelectorAll("#timeline-rail-dots .timeline-rail-dot");
+  dots.forEach((dot, idx) => {
+    const item = timeline[idx];
+    if (!item) return;
+    const period = isEn ? (item.period_en || item.period_vi) : (item.period_vi || item.period_en);
+    dot.setAttribute("title", period);
+  });
+
+  const cards = document.querySelectorAll("#timeline-cards-stack .timeline-stack-card");
+  cards.forEach((card, idx) => {
+    const item = timeline[idx];
+    if (!item) return;
+    const tInfo = isEn ? (item.en || item.vi || item) : (item.vi || item.en || item);
+    const period = isEn ? (item.period_en || item.period_vi) : (item.period_vi || item.period_en);
+    const company = isEn ? (item.company_en || item.company_vi) : (item.company_vi || item.company_en);
+    const role = tInfo.role || item.role;
+    const desc = tInfo.description || item.description;
+    const achievements = tInfo.achievements || item.achievements || [];
+
+    const periodEl = card.querySelector(".timeline-period");
+    const titleEl = card.querySelector(".timeline-title");
+    const companyEl = card.querySelector(".timeline-company");
+    const descEl = card.querySelector(".timeline-desc");
+    const achList = card.querySelector(".timeline-achievements");
+
+    if (periodEl) periodEl.textContent = period;
+    if (titleEl) titleEl.textContent = role;
+    if (companyEl) companyEl.textContent = company;
+    if (descEl) descEl.textContent = desc;
+    if (achList && achievements.length > 0) {
+      achList.innerHTML = achievements.map(ach => `<li>${ach}</li>`).join("");
+    }
+  });
+}
+
+function updateTestimonialsLanguage(lang) {
+  if (typeof PORTFOLIO_DATA === "undefined") return;
+  const isEn = lang === "en";
+  const testimonials = PORTFOLIO_DATA.testimonials;
+  const cards = document.querySelectorAll("#testimonials-container .testimonial-card");
+  cards.forEach((card, idx) => {
+    const item = testimonials[idx];
+    if (!item) return;
+    const tInfo = isEn ? (item.en || item.vi || item) : (item.vi || item.en || item);
+    const quote = tInfo.quote || item.quote;
+    const role = tInfo.role || item.role;
+
+    const quoteEl = card.querySelector(".testimonial-quote-text");
+    const roleEl = card.querySelector(".testimonial-role");
+    if (quoteEl) quoteEl.textContent = `“${quote}”`;
+    if (roleEl) roleEl.textContent = role;
+  });
 }
 
 /* ==========================================================================
@@ -1300,7 +1447,21 @@ function initSmoothScroll() {
         e.preventDefault();
 
         const navHeight = navbar ? navbar.offsetHeight : 70;
-        const targetPosition = targetEl.getBoundingClientRect().top + window.pageYOffset - navHeight;
+        let targetPosition;
+
+        // Tính toạ độ chuẩn xác dựa trên các khối pin GSAP ScrollTrigger
+        if (targetId === "#skills" && typeof ScrollTrigger !== "undefined") {
+          const heroST = ScrollTrigger.getById("Cute-Rising-Horizontal");
+          targetPosition = heroST ? heroST.end : targetEl.getBoundingClientRect().top + window.pageYOffset - navHeight;
+        } else if (targetId === "#timeline" && typeof ScrollTrigger !== "undefined") {
+          const timelineST = ScrollTrigger.getById("Timeline-Stack-Pin");
+          targetPosition = timelineST ? timelineST.start : targetEl.getBoundingClientRect().top + window.pageYOffset - navHeight;
+        } else if (targetId === "#testimonials" && typeof ScrollTrigger !== "undefined") {
+          const timelineST = ScrollTrigger.getById("Timeline-Stack-Pin");
+          targetPosition = timelineST ? timelineST.end : targetEl.getBoundingClientRect().top + window.pageYOffset - navHeight;
+        } else {
+          targetPosition = targetEl.getBoundingClientRect().top + window.pageYOffset - navHeight;
+        }
 
         window.scrollTo({
           top: targetPosition,
@@ -1311,6 +1472,13 @@ function initSmoothScroll() {
         if (window.history && window.history.replaceState) {
           window.history.replaceState(null, null, window.location.pathname);
         }
+
+        // Kích hoạt reveal tức thì tại đích đến
+        setTimeout(() => {
+          if (typeof observeReveals === "function") {
+            observeReveals();
+          }
+        }, 450);
       }
     });
   });
@@ -1634,12 +1802,18 @@ function initScrollTriggerSkillsAndTimeline() {
           stagger: 0.12,
           ease: "power2.out",
           scrollTrigger: {
+            id: "Skills-Header",
             trigger: skillsHeader,
-            start: "top 85%",
-            toggleActions: "play none none reverse"
+            start: "top 88%",
+            toggleActions: "play none none none"
           }
         }
       );
+      // Fallback an toàn: nếu header đã nằm trong viewport ngay khi load
+      const headerRect = skillsHeader.getBoundingClientRect();
+      if (headerRect.top < window.innerHeight) {
+        gsap.to(skillsHeader.children, { opacity: 1, y: 0, scale: 1, duration: 0.3 });
+      }
     }
 
     if (skillCards.length >= 3) {
@@ -1733,22 +1907,25 @@ function initScrollTriggerSkillsAndTimeline() {
         });
       });
 
-      // Đưa timeline về trạng thái ban đầu (tụ bài ẩn ở giữa)
+      // Đưa timeline về trạng thái ban đầu
       dealTL.progress(0);
 
-      // Kích hoạt ScrollTrigger:
-      // - Khi kéo xuống tới Kỹ năng: 3 lá bài bay vụt ra (deal out)
-      // - Khi kéo lên lại (rời khỏi khu vực): các lá bài tự động gom thu trở lại vào tụ bài giữa
+      // Kích hoạt ScrollTrigger cho Kỹ năng:
+      // - Khi cuộn tới: 3 lá bài xòe ra (play) và GIỮ NGUYÊN trạng thái hiển thị
+      // - Khi cuộn ngược lên hẳn phía trên (về Showcase Dự án): thu lại vào tụ bài
       ScrollTrigger.create({
+        id: "Skills-Deal-Cards",
         trigger: skillsGrid,
-        start: "top 78%",
-        end: "bottom 18%",
-        animation: dealTL,
+        start: "top 80%",
         onEnter: () => dealTL.timeScale(1.0).play(),
-        onLeave: () => dealTL.timeScale(1.6).reverse(),
-        onEnterBack: () => dealTL.timeScale(1.0).play(),
-        onLeaveBack: () => dealTL.timeScale(1.6).reverse()
+        onLeaveBack: () => dealTL.timeScale(1.4).reverse()
       });
+
+      // Nếu người dùng đã ở vùng skills (ví dụ tải lại trang hoặc bấm nav)
+      const gridRect = skillsGrid.getBoundingClientRect();
+      if (gridRect.top < window.innerHeight * 0.82) {
+        dealTL.progress(1);
+      }
 
       ScrollTrigger.addEventListener("refreshInit", updateCardOffsets);
     }
@@ -1806,6 +1983,7 @@ function initScrollTriggerSkillsAndTimeline() {
       const stackTL = gsap.timeline({
         onUpdate: updateDots,
         scrollTrigger: {
+          id: "Timeline-Stack-Pin",
           trigger: stage,
           start: "center 52%",   // Kéo thẻ lên tới chính giữa màn hình mới ghim và cuộn thẻ
           end: `+=${scrollDistance}`,
